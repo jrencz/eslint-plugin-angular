@@ -7,25 +7,6 @@ If the jQuery library is imported, angular.element will be a wrapper around the 
 
 **Rule based on Angular 1.x**
 
-## Examples
-
-The following patterns are considered problems;
-
-    /*eslint angular/angularelement: 2*/
-
-    // invalid
-    $('.some-class'); // error: You should use angular.element instead of the jQuery $ object
-
-    // invalid
-    jQuery('.another-class'); // error: You should use angular.element instead of the jQuery $ object
-
-The following patterns are **not** considered problems;
-
-    /*eslint angular/angularelement: 2*/
-
-    // valid
-    angular.element('.some-class');
-
 ## Version
 
 This rule was introduced in eslint-plugin-angular 0.1.0

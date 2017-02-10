@@ -67,6 +67,14 @@ function updateReadme(readmePath, cb) {
  */
 function testDocs(cb) {
     this.rules.forEach(function(rule) {
+        if (rule.examplesByCommonTesterConfig instanceof Map) {
+            for (var [testerConfig, examples] of rule.examplesByCommonTesterConfig) {
+                console.log(`I would run ${ examples.length } with config`,
+                    testerConfig);
+                // var eslintTester = new RuleTester(testerConfig);
+                // eslintTester.run(rule.ruleName, rule.module, examples);
+            }
+        }
         if (rule.examples !== undefined) {
             var eslintTester = new RuleTester();
             eslintTester.run(rule.ruleName, rule.module, rule.examples);
@@ -201,8 +209,13 @@ function _createRule(ruleName) {
         invalid: _filterByValidity(rule.allExamples, false)
     };
 
+    var [
+        examplesWithParserConfig,
+        examplesWithoutParserConfig,
+    ] = _.partition(rule.allExamples, example => 'testerConfig' in example);
+
     rule.groupedExamples = [];
-    var examplesGroupedByConfig = _.groupBy(rule.allExamples, 'jsonOptions');
+    var examplesGroupedByConfig = _.groupBy(examplesWithoutParserConfig, 'jsonOptions');
     _.each(examplesGroupedByConfig, function(examples, config) {
         // append invalid examples if existing
         _appendGroupedExamplesByValidity(rule.groupedExamples, examples, config, false);
@@ -211,6 +224,15 @@ function _createRule(ruleName) {
         _appendGroupedExamplesByValidity(rule.groupedExamples, examples, config, true);
     });
     rule.hasOnlyOneConfig = Object.keys(examplesGroupedByConfig).length === 1;
+
+    rule.examplesByCommonTesterConfig = new Map();
+    _(examplesWithParserConfig)
+        .groupBy(({testerConfig}) => JSON.stringify(testerConfig))
+        .each(examples => {
+            rule
+                .examplesByCommonTesterConfig
+                .set(_.head(examples).testerConfig, examples)
+        });
 
     return rule;
 }
